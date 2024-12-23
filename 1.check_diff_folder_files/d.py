@@ -9,7 +9,7 @@ def read_file(file_path):
 
 
 # 比较文件内容并记录差异
-def compare_files(file1, file2, result_folder, file_name):
+def compare_files(file1, file2, result_folder, file_name,folder1,folder2):
     """比较两个文件的差异并输出"""
     df1 = read_file(file1)
     df2 = read_file(file2)
@@ -35,8 +35,8 @@ def compare_files(file1, file2, result_folder, file_name):
                 diff_file.write(f"文件: {file_name}\n")
                 diff_found = True
                 diff_file.write(f"差异位置: 行 {line_idx + 1}\n")
-                diff_file.write(f"文件1: {line1}\n")
-                diff_file.write(f"文件2: {line2}\n")
+                diff_file.write(f"{folder1}   : {line1}\n")
+                diff_file.write(f"{folder2}   : {line2}\n")
                 diff_file.write("-" * 88 + "\n")
 
     # 如果有差异，更新计数
@@ -108,7 +108,7 @@ def compare_folders(folder1, folder2):
         file2 = os.path.join(folder2, file_name)
 
         total_files += 1
-        if compare_files(file1, file2, result_folder, file_name):
+        if compare_files(file1, file2, result_folder, file_name,folder1,folder2):
             diff_files += 1
 
     # 写入总统计数据
