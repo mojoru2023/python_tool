@@ -39,14 +39,14 @@ def compare_files(file1, file2, result_folder, file_name):
                 diff_file.write(f"文件2: {line2}\n")
                 diff_file.write("-" * 88 + "\n")
 
-        # 如果有差异，更新计数
-        if diff_found:
-            with open(check_counts_path, 'a', encoding='utf-8') as count_file:
-                count_file.write(f"差异文件: {file_name}\n")
-        if not diff_found:
-            with open(same_info_file_path, 'a', encoding='utf-8') as diff_file:
-                diff_file.write(f"文件: {file_name}\n")
-        return diff_found
+    # 如果有差异，更新计数
+    if diff_found:
+        with open(check_counts_path, 'a', encoding='utf-8') as count_file:
+            count_file.write(f"差异文件: {file_name}\n")
+    else:
+        with open(same_info_file_path, 'a', encoding='utf-8') as same_file:
+            same_file.write(f"文件: {file_name}\n")
+    return diff_found
 
 
 def compare_folders(folder1, folder2):
