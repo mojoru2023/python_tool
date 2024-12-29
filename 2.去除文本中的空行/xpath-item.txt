@@ -1,0 +1,1 @@
+//*[@id="segments-container"]/ytd-transcript-segment-renderer[*]/div
