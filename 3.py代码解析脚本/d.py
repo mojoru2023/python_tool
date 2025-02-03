@@ -32,7 +32,7 @@ def extract_symbols_from_file(file_path):
         elif current_class and not stripped_line.startswith('def ') and '=' in stripped_line:
             variable_name = stripped_line.split('=')[0].strip()
             if is_valid_variable_name(variable_name):  # 确保变量名称有效
-                symbols.append(f'  类变量: {variable_name}\n')
+                symbols.append(f'  变量/参数: {variable_name}\n')
 
         # 检查是否为函数定义
         if stripped_line.startswith('def '):
@@ -60,7 +60,7 @@ def extract_symbols_from_file(file_path):
 
                     # 确保等号两边都符合变量名的规则
                     if len(parts) == 2 and is_valid_variable_name(left_side):
-                        symbols.append(f'  函数变量: {left_side}\n')
+                        symbols.append(f'  变量/参数: {left_side}\n')
             else:
                 # 完成函数定义的解析
                 in_function_body = False
@@ -85,7 +85,7 @@ def parse_function_parameters(function_lines, symbols):
 
         for param in params:
             if param:  # 确保参数不为空
-                symbols.append(f'  函数参数: {param}\n')
+                symbols.append(f'  变量/参数: {param}\n')
 
 
 def main(directory):
