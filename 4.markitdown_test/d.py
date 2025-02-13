@@ -65,6 +65,21 @@ def convert_files_in_directory(input_directory):
                 except Exception as e:
                     print(f"Error converting {input_file_path}: {e}")
 
+
+        # 遍历生成的MD文件，移除其中的NaN
+    for filename in os.listdir(output_directory):
+        if filename.endswith(".md"):
+            file_path = os.path.join(output_directory, filename)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            
+            # 使用正则表达式替换所有的 NaN（如果存在）
+            cleaned_content = re.sub(r'\bNaN\b', '', content)
+
+            # 再次写入文件
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(cleaned_content)
+
     # 写入文件统计信息
     with open(os.path.join(output_directory, 'file_counter.txt'), 'w', encoding='utf-8') as counter_file:
         counter_file.write(f"Total converted files: {total_files_converted}\n")
