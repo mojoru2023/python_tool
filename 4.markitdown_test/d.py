@@ -1,4 +1,16 @@
+
+# 实时预览markdown
+# 安装markdown all in one插件以后
+
+# 编写markdown文档可以, 通过command + shift + p打开 vscode的配置，
+# 输入>Markdown: Open Preview to the Side 即可打开预览效果如图
+# 也可以通过快捷键ctrl + shift + v
+
+
+
+
 import os
+import pandas as pd
 from markitdown import MarkItDown
 
 def convert_files_in_directory(input_directory):
@@ -21,7 +33,10 @@ def convert_files_in_directory(input_directory):
         ".xls",    # Excel 文件
         ".wav",    # 音频文件
         ".pptx",   # PowerPoint 文件
-      
+        ".mp3",    # 音频文件
+        ".jpg",    # 图片文件
+        ".jpeg",   # 图片文件
+        ".png"     # 图片文件
     ]
 
     # 遍历输入目录
@@ -34,17 +49,28 @@ def convert_files_in_directory(input_directory):
             if file_extension.lower() in supported_extensions:
                 # 转换文件
                 input_file_path = os.path.join(root, filename)
-                md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
-
+                
                 try:
-                    result = md.convert(input_file_path)
+                    if file_extension.lower() in ['.xlsx', '.xls']:
+                        # 使用 pandas 读取 Excel 文件
+                        df = pd.read_excel(input_file_path, engine='openpyxl')
+                        # 将 NaN 替换为空字符串
+                        df.fillna('', inplace=True)
+                        # 将 DataFrame 转换为 Markdown
+                        markdown_content = df.to_markdown(index=False)
+                    else:
+                        # 对于其他文件类型
+                        md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
+                        result = md.convert(input_file_path)
+                        markdown_content = result.text_content
+                    
                     # 修改输出文件名格式
                     output_file_name = f"{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
                     output_file_path = os.path.join(output_directory, output_file_name)
 
                     # 保存转换后的内容
                     with open(output_file_path, 'w', encoding='utf-8') as output_file:
-                        output_file.write(result.text_content)
+                        output_file.write(markdown_content)
 
                     # 更新统计信息
                     total_files_converted += 1
@@ -62,8 +88,5 @@ def convert_files_in_directory(input_directory):
     print("Conversion completed. Check the 'md_result' folder.")
 
 # 使用示例
-
-if __name__ == "__main__":
-
-    input_directory = "C:\\Users\\user\\Desktop\\New folder"  # 替换为你自己的目录路径
-    convert_files_in_directory(input_directory)
+input_directory = "C:\\Users\\user\\Desktop\\New folder"  # 替换为你自己的目录路径
+convert_files_in_directory(input_directory)
