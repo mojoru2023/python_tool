@@ -6,9 +6,7 @@
 # 输入>Markdown: Open Preview to the Side 即可打开预览效果如图
 # 也可以通过快捷键ctrl + shift + v
 
-
 import os
-import pandas as pd
 from markitdown import MarkItDown
 
 def convert_files_in_directory(input_directory):
@@ -17,8 +15,8 @@ def convert_files_in_directory(input_directory):
     os.makedirs(output_directory, exist_ok=True)
 
     # 记录转换统计
-    file_counter = {}
     total_files_converted = 0
+    word_count_list = []  # 存储每个文件的字数
 
     # 支持的文件扩展名
     supported_extensions = [
@@ -49,21 +47,20 @@ def convert_files_in_directory(input_directory):
                     result = md.convert(input_file_path)
                     content = result.text_content
                     
-                    # 统计字数（去除 NaN）
-                    word_count = len([word for word in content.split() if word.strip()])  # 统计非空字符串的数量
+                    # 统计非空字符串的字数
+                    word_count = len([word for word in content.split() if word.strip()])
                     
-                    # 修改输出文件名格式
-                    output_file_name = f"{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
+                    # 修改输出文件名格式，添加编号
+                    total_files_converted += 1
+                    output_file_name = f"file-{total_files_converted}-{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
                     output_file_path = os.path.join(output_directory, output_file_name)
 
                     # 保存转换后的内容
                     with open(output_file_path, 'w', encoding='utf-8') as output_file:
                         output_file.write(content)
 
-                    # 更新统计信息
-                    total_files_converted += 1
-                    file_counter[file_extension] = file_counter.get(file_extension, 0) + 1
-                    file_counter[f"{file_extension}-word-count"] = file_counter.get(f"{file_extension}-word-count", 0) + word_count
+                    # 将文件及其字数记录到列表
+                    word_count_list.append(f"{output_file_name}: {word_count} words")
 
                 except Exception as e:
                     print(f"Error converting {input_file_path}: {e}")
@@ -71,8 +68,8 @@ def convert_files_in_directory(input_directory):
     # 写入文件统计信息
     with open(os.path.join(output_directory, 'file_counter.txt'), 'w', encoding='utf-8') as counter_file:
         counter_file.write(f"Total converted files: {total_files_converted}\n")
-        for ext, count in file_counter.items():
-            counter_file.write(f"{ext}: {count}\n")
+        for entry in word_count_list:
+            counter_file.write(f"{entry}\n")
 
     print("Conversion completed. Check the 'md_result' folder.")
 
