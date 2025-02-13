@@ -7,8 +7,6 @@
 # 也可以通过快捷键ctrl + shift + v
 
 
-
-
 import os
 import pandas as pd
 from markitdown import MarkItDown
@@ -32,11 +30,7 @@ def convert_files_in_directory(input_directory):
         ".xlsx",   # Excel 文件
         ".xls",    # Excel 文件
         ".wav",    # 音频文件
-        ".pptx",   # PowerPoint 文件
-        ".mp3",    # 音频文件
-        ".jpg",    # 图片文件
-        ".jpeg",   # 图片文件
-        ".png"     # 图片文件
+        ".pptx"    # PowerPoint 文件
     ]
 
     # 遍历输入目录
@@ -47,22 +41,16 @@ def convert_files_in_directory(input_directory):
 
             # 检查是否是支持的文件类型
             if file_extension.lower() in supported_extensions:
-                # 转换文件
                 input_file_path = os.path.join(root, filename)
-                
+                md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
+
                 try:
-                    if file_extension.lower() in ['.xlsx', '.xls']:
-                        # 使用 pandas 读取 Excel 文件
-                        df = pd.read_excel(input_file_path, engine='openpyxl')
-                        # 将 NaN 替换为空字符串
-                        df.fillna('', inplace=True)
-                        # 将 DataFrame 转换为 Markdown
-                        markdown_content = df.to_markdown(index=False)
-                    else:
-                        # 对于其他文件类型
-                        md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
-                        result = md.convert(input_file_path)
-                        markdown_content = result.text_content
+                    # 转换文件
+                    result = md.convert(input_file_path)
+                    content = result.text_content
+                    
+                    # 统计字数（去除 NaN）
+                    word_count = len([word for word in content.split() if word.strip()])  # 统计非空字符串的数量
                     
                     # 修改输出文件名格式
                     output_file_name = f"{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
@@ -70,11 +58,12 @@ def convert_files_in_directory(input_directory):
 
                     # 保存转换后的内容
                     with open(output_file_path, 'w', encoding='utf-8') as output_file:
-                        output_file.write(markdown_content)
+                        output_file.write(content)
 
                     # 更新统计信息
                     total_files_converted += 1
                     file_counter[file_extension] = file_counter.get(file_extension, 0) + 1
+                    file_counter[f"{file_extension}-word-count"] = file_counter.get(f"{file_extension}-word-count", 0) + word_count
 
                 except Exception as e:
                     print(f"Error converting {input_file_path}: {e}")
@@ -88,5 +77,6 @@ def convert_files_in_directory(input_directory):
     print("Conversion completed. Check the 'md_result' folder.")
 
 # 使用示例
-input_directory = "C:\\Users\\user\\Desktop\\New folder"  # 替换为你自己的目录路径
-convert_files_in_directory(input_directory)
+if __name__ == "__main__":
+    input_directory = "C:\\Users\\user\\Desktop\\New folder"  # 替换为你自己的目录路径
+    convert_files_in_directory(input_directory)
