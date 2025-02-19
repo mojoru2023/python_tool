@@ -5,9 +5,23 @@
 # 编写markdown文档可以, 通过command + shift + p打开 vscode的配置，
 # 输入>Markdown: Open Preview to the Side 即可打开预览效果如图
 # 也可以通过快捷键ctrl + shift + v
-
 import os
 from markitdown import MarkItDown
+
+def convert_txt_to_md(txt_file_path, md_file_path):
+    with open(txt_file_path, 'r', encoding='utf-8') as txt_file:
+        content = txt_file.readlines()
+
+    with open(md_file_path, 'w', encoding='utf-8') as md_file:
+        for line in content:
+            # 假设以"## "开头的行是二级标题
+            if line.startswith("## "):
+                md_file.write(line)  # 保持二级标题
+            # 假设以"- "开头的行是无序列表项
+            elif line.startswith("- "):
+                md_file.write(line)  # 保持列表项
+            else:
+                md_file.write(line)  # 其他内容直接写入
 
 def convert_files_in_directory(input_directory):
     # 创建输出目录
@@ -15,8 +29,8 @@ def convert_files_in_directory(input_directory):
     os.makedirs(output_directory, exist_ok=True)
 
     # 记录转换统计
+    file_counter = {}
     total_files_converted = 0
-    word_count_list = []  # 存储每个文件的字数
 
     # 支持的文件扩展名
     supported_extensions = [
@@ -28,7 +42,8 @@ def convert_files_in_directory(input_directory):
         ".xlsx",   # Excel 文件
         ".xls",    # Excel 文件
         ".wav",    # 音频文件
-        ".pptx"    # PowerPoint 文件
+        ".pptx",   # PowerPoint 文件
+        ".txt"     # 添加对txt文件的支持
     ]
 
     # 遍历输入目录
@@ -40,51 +55,34 @@ def convert_files_in_directory(input_directory):
             # 检查是否是支持的文件类型
             if file_extension.lower() in supported_extensions:
                 input_file_path = os.path.join(root, filename)
-                md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
+                # 对于.txt文件使用自定义转换函数
+                if file_extension.lower() == ".txt":
+                    md_file_path = os.path.join(output_directory, f"{file_name}.md")
+                    convert_txt_to_md(input_file_path, md_file_path)
+                else:
+                    md = MarkItDown(enable_plugins=False)  # 可根据需要启用插件
+                    try:
+                        result = md.convert(input_file_path)
+                        # 修改输出文件名格式
+                        output_file_name = f"{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
+                        output_file_path = os.path.join(output_directory, output_file_name)
 
-                try:
-                    # 转换文件
-                    result = md.convert(input_file_path)
-                    content = result.text_content
-                    
-                    # 统计非空字符串的字数
-                    word_count = len([word for word in content.split() if word.strip()])
-                    
-                    # 修改输出文件名格式，添加编号
-                    total_files_converted += 1
-                    output_file_name = f"file-{total_files_converted}-{file_name}-{file_extension[1:]}-to.md"  # 去掉点并添加后缀
-                    output_file_path = os.path.join(output_directory, output_file_name)
+                        # 保存转换后的内容
+                        with open(output_file_path, 'w', encoding='utf-8') as output_file:
+                            output_file.write(result.text_content)
 
-                    # 保存转换后的内容
-                    with open(output_file_path, 'w', encoding='utf-8') as output_file:
-                        output_file.write(content)
+                        # 更新统计信息
+                        total_files_converted += 1
+                        file_counter[file_extension] = file_counter.get(file_extension, 0) + 1
 
-                    # 将文件及其字数记录到列表
-                    word_count_list.append(f"{output_file_name}: {word_count} words")
-
-                except Exception as e:
-                    print(f"Error converting {input_file_path}: {e}")
-
-
-        # 遍历生成的MD文件，移除其中的NaN
-    for filename in os.listdir(output_directory):
-        if filename.endswith(".md"):
-            file_path = os.path.join(output_directory, filename)
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-            
-            # 使用正则表达式替换所有的 NaN（如果存在）
-            cleaned_content = re.sub(r'\bNaN\b', '', content)
-
-            # 再次写入文件
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(cleaned_content)
+                    except Exception as e:
+                        print(f"Error converting {input_file_path}: {e}")
 
     # 写入文件统计信息
     with open(os.path.join(output_directory, 'file_counter.txt'), 'w', encoding='utf-8') as counter_file:
         counter_file.write(f"Total converted files: {total_files_converted}\n")
-        for entry in word_count_list:
-            counter_file.write(f"{entry}\n")
+        for ext, count in file_counter.items():
+            counter_file.write(f"{ext}: {count}\n")
 
     print("Conversion completed. Check the 'md_result' folder.")
 
