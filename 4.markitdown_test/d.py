@@ -14,12 +14,19 @@ def convert_txt_to_md(txt_file_path, md_file_path):
 
     with open(md_file_path, 'w', encoding='utf-8') as md_file:
         for line in content:
-            # 假设以"## "开头的行是二级标题
-            if line.startswith("## "):
-                md_file.write(line)  # 保持二级标题
-            # 假设以"- "开头的行是无序列表项
-            elif line.startswith("- "):
-                md_file.write(line)  # 保持列表项
+            # 识别标题
+            if line.startswith("# "):
+                md_file.write(line)  # 一级标题
+            elif line.startswith("## "):
+                md_file.write(line)  # 二级标题
+            elif line.startswith("### "):
+                md_file.write(line)  # 三级标题
+            # 识别无序列表项
+            elif line.startswith("- ") or line.startswith("* "):
+                md_file.write(line)  # 无序列表项
+            # 识别有序列表项
+            elif line.lstrip().startswith(tuple(f"{i}. " for i in range(1, 10))):  # 基本支持1-9的有序列表
+                md_file.write(line)  # 有序列表项
             else:
                 md_file.write(line)  # 其他内容直接写入
 
